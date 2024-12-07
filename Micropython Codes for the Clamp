@@ -1,0 +1,44 @@
+import machine
+import time
+import math
+#This Shows the Pin and Locations
+hPin=27
+vPin=26
+hJoy= machine.ADC(hPin)
+vJoy= machine.ADC(vPin)
+#Setting up the Servo
+servoPin=15
+servo=machine. PWM(machine.Pin(servoPin))
+servo.freq(50)
+#This should put the Servo in the 0 position
+servo.duty_u16(1638)
+
+while True:
+    hVal=hJoy.read_u16()
+    vVal=vJoy.read_u16()
+#This gets us In good ineger form    
+    hCal=int(-.00306*hVal+100.766)
+    vCal=int(.00306*vVal-100.766)
+ #Calculates it into degrees    
+    deg=math.atan2(vCal,hCal)*360/2/math.pi
+    if hCal==0:
+        hCal=1
+    if deg<0:
+        deg=deg+360
+    
+    mag=math.sqrt(hCal**2+vCal**2)
+    if mag<=4:
+        hCal=0
+        vCal=0
+        deg=0
+#This step is setting Bounds to the Servo
+    if deg>180 and deg<270:
+        deg=180
+    if deg>270 and deg<=360:
+        deg=0
+ #This connect the Servo and the Joystick       
+    pWmVal=36.31*deg+1638
+    servo.duty_u16(int(pWmVal))
+    time.sleep(.1)
+    print(deg)
+    time.sleep_ms(200)
