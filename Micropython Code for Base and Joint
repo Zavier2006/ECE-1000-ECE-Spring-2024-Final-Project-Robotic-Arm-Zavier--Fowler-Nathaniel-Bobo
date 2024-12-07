@@ -1,0 +1,46 @@
+import machine
+import time
+
+# Pin configuration for joystick
+hPin = 27  # Horizontal axis (X-axis)
+vPin = 26  # Vertical axis (Y-axis)
+hJoy = machine.ADC(hPin)
+vJoy = machine.ADC(vPin)
+
+# Servo setup
+servo1Pin = 15  # Servo 1 connected to GP15
+servo2Pin = 14  # Servo 2 connected to GP14
+servo1 = machine.PWM(machine.Pin(servo1Pin))
+servo2 = machine.PWM(machine.Pin(servo2Pin))
+servo1.freq(50)
+servo2.freq(50)
+
+# Helper function to map joystick value (0-65535) to servo angle (0-180)
+def map_joystick_to_angle(joystick_val):
+    return int((joystick_val / 65535) * 180)
+
+# Helper function to set servo angle
+def set_servo_angle(servo, angle):
+    pulse_width = 1000 + (angle / 180) * 1000  # Map angle (0-180) to pulse width (1000-2000us)
+    duty = int((pulse_width / 20000) * 65535)  # Convert pulse width to duty cycle (0-65535)
+    servo.duty_u16(duty)
+
+# Main loop
+while True:
+    # Read joystick values
+    hVal = hJoy.read_u16()  # Horizontal (X-axis) joystick value
+    vVal = vJoy.read_u16()  # Vertical (Y-axis) joystick value
+
+    # Map joystick values to angles
+    angle_h = map_joystick_to_angle(hVal)  # For Servo 1
+    angle_v = map_joystick_to_angle(vVal)  # For Servo 2
+
+ij    # Set servo angles
+    set_servo_angle(servo1, angle_h)
+    set_servo_angle(servo2, angle_v)
+
+    # Optional: Print angles for debugging
+    print(f"Servo 1 (X-axis): {angle_h}° | Servo 2 (Y-axis): {angle_v}°")
+
+    # Small delay to avoid excessive CPU usage
+    time.sleep(0.1)
